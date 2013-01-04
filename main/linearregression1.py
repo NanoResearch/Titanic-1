@@ -11,18 +11,18 @@ import matplotlib
 
 m = 100 # number of training data examples
 
-x = np.array([randint(1,100) for x in xrange(m)])
-y = np.zeros((m,1))
+x = np.array([randint(1,100) for x in xrange(m)])#randint returns random integers from low (inclusive) to high (exclusive), xrange allows the for loop to iterate 100 times.  Ultimately this line fills up an array with random numbers between 1-100
+y = np.zeros((m,1))#zeros returns a new array filled with zeros. the argument (m,1) structures the array to have M (100) rows and 1 column
 
 for i in xrange(m):
     r = random() #random number btw 0 and 1
-    y[i] = x[i] + 100*(r - 0.5) #The true distribution of y is simply y=x, but we add some randomness to simulate real data
+    y[i] = x[i] + 100*(r - 0.5) #The true distribution of y is simply y=x, but we add some randomness to simulate real data.  This for loop first grabs a number from the x array and then it adds an additional random number.  Double randomness I suppose.
 
-scatter(x,y)
-xlabel("x")
-ylabel("y")
-title("Random data (from y=x straight line)")
-show()
+scatter(x,y)#scatter is a scatter plot function.  It's from MatPlotLib.
+xlabel("x")# simply labels the x axis of the plot
+ylabel("y") # simply labels the x axis of the plot
+title("Random data (from y=x straight line)")# simply labels the the plot purpose
+show()#this prints out the plot. It's from matplotlib
 
 xx = np.ones((m,2))
 xx[:,1] = x
