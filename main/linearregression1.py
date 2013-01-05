@@ -24,14 +24,14 @@ ylabel("y") # simply labels the x axis of the plot
 title("Random data (from y=x straight line)")# simply labels the the plot purpose
 show()#this prints out the plot. It's from matplotlib
 
-xx = np.ones((m,2))
-xx[:,1] = x
+xx = np.ones((m,2))#Return a new array of given shape and type, filled with ones
+xx[:,1] = x # here, we have now substitute the array with all the random numbers--x--into the first column of the xx array.  I'm not sure why we didn't just use x
 print "This is X"
 print xx
 print "This is y"
 print y
 
-theta = np.zeros((2,1))
+theta = np.zeros((2,1))# this produces an array that is 2X1.  Why is it only 2 rows?  Is this just initializing?
 print "This is theta"
 print theta
 
@@ -42,10 +42,10 @@ def Jcost(X,y,theta):
     """
     cost function J for linear regression of one variable
     """
-    m = np.size(y)
-    h = np.dot(X,theta) # hypothesis function
-    sqErrors = (h - y) ** 2
-    J = (1.0 / (2 * m)) * sqErrors.sum()
+    m = np.size(y)# the size function returns the size of the list or array.
+    h = np.dot(X,theta) # hypothesis function.  the dot function multiplies X and theta to produce a product of the two arrays.  I don't know why yet.
+    sqErrors = (h - y) ** 2 #Here, we find the difference of y (dependent) values from the x (explanatory) values and square them to find the standard deviation?
+    J = (1.0 / (2 * m)) * sqErrors.sum()#J is the sum of the squared errors over 2 *m
     return J
 
 def gradientdescent(X,y,theta,alpha,niter):

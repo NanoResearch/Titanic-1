@@ -22,5 +22,3 @@ higherlevel.py: The main file for doing analysis work and playing with the data.
 are particularly powerful for filtering the data. showstats() presents the results for a data set in a nice format.
 convertages() converts unknown ages to useful averages. Numerous cuts through the data are shown, t
 o try to gain insight. Random forests are implemented. Several predictions are compared to each other.
-
-An attempt at a change to see if I post directly to mwbinger's repo
