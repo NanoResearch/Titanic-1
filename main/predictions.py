@@ -97,4 +97,3 @@ def randomforests(numforests, n_est, traindataset, testdataset):
     return np.array(RFCpred)
 
 
-
