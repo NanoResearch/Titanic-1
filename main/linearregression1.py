@@ -40,12 +40,12 @@ alpha = 0.0001
 
 def Jcost(X,y,theta):
     """
-    cost function J for linear regression of one variable
+    cost function J for linear regression of one variable.  The idea is to minimize J as much as possible.  When J is minimized as much as possible, then the linear fit of the hypothesis is as good as it can be
     """
-    m = np.size(y)# the size function returns the size of the list or array.
-    h = np.dot(X,theta) # hypothesis function.  the dot function multiplies X and theta to produce a product of the two arrays.  I don't know why yet.
-    sqErrors = (h - y) ** 2 #Here, we find the difference of y (dependent) values from the x (explanatory) values and square them to find the standard deviation?
-    J = (1.0 / (2 * m)) * sqErrors.sum()#J is the sum of the squared errors over 2 *m
+    m = np.size(y)# the size function returns the size of the list or array.  M is the size of your sample
+    h = np.dot(X,theta) # hypothesis function.  the dot function multiplies X and theta to produce a product of the two arrays.  X is the independent variable and Theta is the slope.  Y-intercept is assumed to be zero
+    sqErrors = (h - y) ** 2 #Here, we find the difference of between the predictive hypothesis (h) and the actual values of Y from training set.  We square them to find begin corresponding to the least-squares cost-minimizing function
+    J = (1.0 / (2 * m)) * sqErrors.sum()#J is the sum of the squared errors divided by m--the sample size. So we are averaging the size of the squared errors.  1/2 is introduced as a constant for ease-of-math reasons
     return J
 
 def gradientdescent(X,y,theta,alpha,niter):
