@@ -220,7 +220,8 @@ def graddesexpower(m,n,niter,alpha,lam,randomness,p=1):
 
 print graddesexample(1000,3,1000,0.1,0,10)
 
-print graddesexpower(1000,3,1000,0.1,0,10,p=3)
-print graddesexpower(1000,3,1000,0.1,100,10,p=3)
+print graddesexpower(1000,3,1000,0.1,0,10,p=2)
+print graddesexpower(1000,3,1000,0.1,1,10,p=2)
+print graddesexpower(1000,3,1000,0.1,10,10,p=2)
 
 print "Time elapsed:", time() - starttime

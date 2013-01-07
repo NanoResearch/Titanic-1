@@ -39,6 +39,27 @@ test8 = titandata("test8") #(418,8) array
 
 totdata = vstack((data,test8)) # stacks data on top of test8 to create a (1309,8) array
 
+def df(features,dataset):
+# features is a list of features we want to filter by. For ex. [[1,5],[2,6]]
+# gives all data with sibsp = 1 and parch = 2.
+    if size(dataset) == 0:
+        return []
+    features=list(features) # new copy of the features list
+    dataset=dataset.copy() #start with a copy of the regularized data, either data, test8, or testdata
+    n = np.size(features,0) #number of features we are filtering by
+    for x in xrange(n):
+        feat = features[x] #pair [value,index] for each feature
+        value = feat[0]
+        index = feat[1]
+        dataset = dataset[dataset[0::,index] == value]
+        if size(dataset) == 0:
+            return []
+    return dataset
+# for data and test8 note indices [0=sur, 1=class, 2=sex, 3=age, 4=sibsp, 5=parch, 6=fare, 7=embarked]
+# for testdata note indices [0=class, 1=sex, 2=age, 3=sibsp, 4=parch, 5=fare, 6=embarked]
+# it is probably better to only use test8, and not testdata, so as to avoid confusion on the indices:
+# using only data and test8 you will have uniform index categories.
+
 
 # dfrange will enable us to filter by age range or fare range, as well as ranges in the discrete features
 def dfrange(fmin,fmax,index,dataset):
@@ -87,6 +108,7 @@ def showstats(datasubset): # use this on any subset of data. don't use this on t
     return [nsur, ntot, per] # return the number survived, the total in the datasubset, and the percent survived
 
 
+
 indict8 = { 0 : 'sur', 1 : 'class', 2 : 'sex', 3 : 'age', 4 : 'sibsp', 5 : 'parch', 6 : 'fare' , 7 : 'city' }
 
 constraints = []
@@ -104,8 +126,8 @@ while True:
 print "To summarize, you said constrain data by:", constraints
 
 ncon = np.size(constraints)/3
-#tempdata = data #using the training data set.
-tempdata = test8 # test8 can be used to look at passenger attributes. But note unknown survival value = 2.
+tempdata = data #using the training data set.
+#tempdata = test8 # test8 can be used to look at passenger attributes. But note unknown survival value = 2.
 for x in xrange(ncon):
     fmin = constraints[x][0]
     fmax = constraints[x][1]

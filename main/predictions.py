@@ -7,15 +7,25 @@ import numpy as np
 import scipy
 from numpy import *
 from sklearn.ensemble import RandomForestClassifier
+from time import time
+from DataFilters import df, dfrange, showstats
+from PrepareTitanicData import titandata, convertages
+
+start = time()
 
 set_printoptions(suppress = True) # makes for nice printing without scientific notation
 np.set_printoptions(linewidth=132)
 
-from PrepareTitanicData import titandata
 
 data=titandata("train") #(891,8) array
 testdata=titandata("test") #(418,7) array
 test8 = titandata("test8") #(418,8) array
+totdata = vstack((data,test8)) # stacks data on top of test8 to create a (1309,8) array
+# convert unknown placeholder ages to reasonable averages
+data = convertages(data,3)
+test8 = convertages(test8,3)
+testdata = convertages(testdata,2)
+totdata = convertages(totdata,3)
 
 
 def genderpred(dataset):
@@ -60,13 +70,15 @@ def predicttrain(pred):
     score = round(1 - float(numwrong) / float(np.size(comptrain)),5)
     return score
 
-def comparepreds(pred1,pred2): #takes in predictions in form of 418,1 array
+def comparepreds(pred1,pred2, dataset = testdata): #takes in predictions in form of 418,1 array
     dif = pred1-pred2 #+1,0,-1 for each passenger
     dispass = np.nonzero(dif)[0] # passengers numbers for which the predictions disagree.
     # the [0] due to formatting of nonzero function
-    datadispass = testdata[dispass] # the data for those passengers
+    dataset = dataset.copy()
+    n = np.size(dataset[0]) #size of a row... usually 7 or 8
+    datadispass = dataset[dispass] # the data for those passengers
     numdifpass = np.size(dispass) # how many of them there are
-    datadp = np.zeros([numdifpass,8]) # placeholder
+    datadp = np.zeros([numdifpass,n+1]) # placeholder
     for x in xrange(numdifpass):
         dp = dispass[x] # passenger index for each disagreement
         datadp[x] = insert(datadispass[x],0,dif[dp]) #insert the value of dif into the 0th column
@@ -97,3 +109,7 @@ def randomforests(numforests, n_est, traindataset, testdataset):
     return np.array(RFCpred)
 
 
+
+
+totaltime = time() - start
+print "This code took %f s to run" %totaltime

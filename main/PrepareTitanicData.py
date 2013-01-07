@@ -124,7 +124,24 @@ np.set_printoptions(linewidth=132)
 # "train", which returns data (891,8) array
 # "test", which returns testdata (418,7) array
 # "test8", which returns testdata8 (418,8) array
-# "originaldata", which returns full data (418,11) array of strings
+# "originaldata", which returns full data (418,8) array
+
+
+#We'll also need to replace placeholder values for age = 1000
+def convertages(dataset,ageindex): #ageindex=3 for test8 and data, and 2 for testdata
+    dataset=dataset.copy() #start with a copy of the regularized data, either data, test8, or testdata
+    for row in dataset:
+        if row[ageindex] == 1000:
+            if row[ageindex+1]<=2: # replace placeholder age 1000 with age 30 if sibsp<=2
+                row[ageindex] = 30
+            else:
+                row[ageindex] = 10 # replace placeholder age 1000 with age 10 if sibsp>=3
+    return dataset
+
+# Now let's actually convert the unknown ages to our best guesses.
+# These derive from analysis below which were performed BEFORE doing this conversion
+# (i.e. only on the data where the age is given). To repeat and confirm this analysis you can simply
+# comment out the data conversion below
 
 
 def titandata(dataset):
