@@ -185,7 +185,7 @@ def logreg_sex_class_city():
 
     x = np.hstack([xones, xcl1, xcl2, xs, xem1, xem2, doubles, triples])
     # note that after running with the triples on and off there was virtually no difference in results...
-    # perhaps only linear and quadratic terms are necessary?
+    #perhaps only linear and quadratic terms are necessary?
 
     alpha = 0.3
     niter = 50000
