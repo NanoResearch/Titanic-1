@@ -7,7 +7,7 @@ import numpy as np
 import csv
 from numpy import *
 from PrepareTitanicData import titandata, convertages
-from DataFilters import df, dfrange, showstats
+from DataFilters import df, dfrange, showstats, databin
 from predictions import f3sm12pred, predicttrain, comparepreds
 
 set_printoptions(suppress = True) # makes for nice printing without scientific notation
@@ -26,38 +26,6 @@ test8 = convertages(test8,3)
 totdata = convertages(totdata,3)
 
 ###################################################
-
-def databin(dataset):
-    """
-    bins our data:
-    ages: 0-10 become 5, 11-19 become 15, 20+ become 50
-    sibsp and parch: 0 = 0, 1 and 2 = 1, and 3+ = 3 so have value 0,1, and 3 only
-    thus we have the following number of discrete values:
-    [0=sur, 1=class, 2=sex, 3=age, 4=sibsp, 5=parch, 6=fare, 7=embarked]
-    [2,3,2,3,3,3,fare,3]
-    fare will be ignored
-    """
-    dataset = dataset.copy()
-    for row in dataset:
-        if (row[3] >=0) and (row[3]<=10):
-            row[3] = 5
-        elif (row[3] >=11) and (row[3]<=19):
-            row[3] = 15
-        else:
-            row[3] = 50
-        if (row[4] == 0):
-            row[4] = 0
-        elif (row[4] == 1) or (row[4] == 2):
-            row[4] = 1
-        else:
-            row[4] = 3
-        if (row[5] == 0):
-            row[5] = 0
-        elif (row[5] == 1) or (row[5] == 2):
-            row[5] = 1
-        else:
-            row[5] = 3
-    return dataset
 
 def prod( iterable ):# returns the product of each element
     p = 1
@@ -149,140 +117,147 @@ def bayespreddata(dataset, indexignore = [], impose = False, depend = False, imp
         pred.append(bp)
     return np.array(pred)
 
-test8db = databin(test8)
+if __name__ == "__main__":
+    test8db = databin(test8)
 
-bptrain = bayespreddata(db)
-bptraindep = bayespreddata(db, depend = True, indexignore = [], imposedepend = True)
-bptrainimp = bayespreddata(db, impose = True)
-#bptrain5 = bayespreddata(db,indexignore=[5])
-#bptrain45 = bayespreddata(db,indexignore=[4,5])
+    #bptrain = bayespreddata(db)
+    #bptraindep = bayespreddata(db, depend = True, indexignore = [], imposedepend = True)
+    #bptrainimp = bayespreddata(db, impose = True)
+    #bptrain5 = bayespreddata(db,indexignore=[5])
+    #bptrain45 = bayespreddata(db,indexignore=[4,5])
 
-bptestdep = bayespreddata(test8db, depend = True, indexignore = [], imposedepend = True)
+    bptestdep = bayespreddata(test8db, depend = True, indexignore = [], imposedepend = True)
+    bptestind = bayespreddata(test8db)
+    bptestindimp = bayespreddata(test8db, impose = True)
 
-f3sm12train = f3sm12pred(db)
-f3sm12test = f3sm12pred(test8db)
+    #f3sm12train = f3sm12pred(db)
+    f3sm12test = f3sm12pred(test8db)
 
-print predicttrain(bptrain)
-print predicttrain(bptraindep)
-print predicttrain(bptrainimp)
+    #print predicttrain(bptrain)
+    #print predicttrain(bptraindep)
+    #print predicttrain(bptrainimp)
 
-#print predicttrain(bptrain5)
-#print predicttrain(bptrain45)
+    #print predicttrain(bptrain5)
+    #print predicttrain(bptrain45)
 
-comparepreds(bptrain, f3sm12train, dataset = db)
-comparepreds(bptrainimp, f3sm12train, dataset = db)
-comparepreds(bptraindep, f3sm12train, dataset = db)
+    #comparepreds(bptrain, f3sm12train, dataset = db)
+    #comparepreds(bptrainimp, f3sm12train, dataset = db)
+    #comparepreds(bptraindep, f3sm12train, dataset = db)
 
-comparepreds(bptestdep, f3sm12test)
-
-
-#comparepreds(bptrain, bptrain5, dataset = db)
-#comparepreds(bptrain5, bptrain45, dataset = db)
-
-
-totaltime = time() - start
-print "This code took %f s to run" %totaltime
-
-import sys
-sys.exit()
+    comparepreds(bptestdep, f3sm12test)
+    comparepreds(bptestind, f3sm12test)
+    comparepreds(bptestind, bptestdep)
 
 
-for sex in xrange(2):
-    for cl in xrange(1,4):
-        feat = [[cl,1],[sex,2]]
-        print "class=",cl, "and sex=",sex
-        print bayespred(feat)
-        print showstats(df(feat,data))
-
-xvals = [ [1,2,3], 1], [ [0,1], 2 ], [ [5,15,50], 3], [ [0,1,3], 4 ], [ [0,1,3], 5], [ [0,1,2], 7 ]
-
-for cl in [1,2,3]:
-    for sex in [0,1]:
-        for age in [5,15,50]:
-            for sib in [0,1,3]:
-                for par in [0,1,3]:
-                    for emb in [0,1,2]:
-                        xval = [[cl,1], [sex,2], [age,3], [sib,4], [par,5], [emb,7]]
-                        bp = bayespred(xval)
-                        # there are 2*(3^5) = 486 different categories given the way we binned the data.
-                        # We want to display only the results that disagree with the F3SM12 model
-                        if (sex == 1) and (bp <= 0.5) and not( (cl == 3) and (emb == 0) ):
-                            print xval, "yields:", bp
-                        elif (sex == 1) and (bp >= 0.5) and (cl == 3) and (emb == 0) :
-                            print xval, "yields:", bp
-                        elif (sex == 0) and (bp <= 0.5) and (age == 5) and not(cl == 3) :
-                            print xval, "yields:", bp
-                        elif (sex == 0) and (bp >= 0.5) and not((age == 5) and not(cl == 3)) :
-                            print xval, "yields:", bp
-
-print bayespred([[1,1],[0,2],[0,7],[3,4]])
+    #comparepreds(bptrain, bptrain5, dataset = db)
+    #comparepreds(bptrain5, bptrain45, dataset = db)
 
 
 
 
+    totaltime = time() - start
+    print "This code took %f s to run" %totaltime
+
+    import sys
+    sys.exit()
 
 
-
-
-
-
-
-
-
-
-for sur in xrange(2):
     for sex in xrange(2):
         for cl in xrange(1,4):
-            Ns = showstats(df([[sur,0]],data))[1]
-            Nsc = showstats(df([[sur,0],[cl,1]],data))[1]
-            Nss = showstats(df([[sur,0],[sex,2]],data))[1]
-            Nscs = showstats(df([[sur,0],[cl,1],[sex,2]],data))[1]
-            print "For sur=",sur, "class=", cl, "sex=", sex
-            print "Is class ind of sex? "
-            print "[LT,LB,Lp] = ", [Nscs,Nss,round(float(Nscs)/Nss,3)]
-            print "[RT,RB,Rp] = ", [Nsc,Ns,round(float(Nsc)/Ns,3)]
-            print "Is sex ind of class? "
-            print "[LT,LB,Lp] = ", [Nscs,Nsc,round(float(Nscs)/Nsc,3)]
-            print "[RT,RB,Rp] = ", [Nss,Ns,round(float(Nss)/Ns,3)]
-            print "#"*50
-print "#"*100
-print "#"*100
-for sur in xrange(2):
-    for sex in xrange(2):
-        for emb in xrange(3):
-            Ns = showstats(df([[sur,0]],data))[1]
-            Nse = showstats(df([[sur,0],[emb,7]],data))[1]
-            Nss = showstats(df([[sur,0],[sex,2]],data))[1]
-            Nses =showstats(df([[sur,0],[emb,7],[sex,2]],data))[1]
-            print "For sur=",sur, "city=", emb, "sex=", sex
-            print "Is city ind of sex? "
-            print "[LT,LB,Lp] = ", [Nses,Nss,round(float(Nses)/Nss,3)]
-            print "[RT,RB,Rp] = ", [Nse,Ns,round(float(Nse)/Ns,3)]
-            print "Is sex ind of city? "
-            print "[LT,LB,Lp] = ", [Nses,Nse,round(float(Nses)/Nse,3)]
-            print "[RT,RB,Rp] = ", [Nss,Ns,round(float(Nss)/Ns,3)]
-            print "#"*50
-print "#"*100
-print "#"*100
-for sur in xrange(2):
-    for cl in xrange(1,4):
-        for emb in xrange(3):
-            Ns = showstats(df([[sur,0]],data))[1]
-            Nse = showstats(df([[sur,0],[emb,7]],data))[1]
-            Nsc = showstats(df([[sur,0],[cl,1]],data))[1]
-            Nsec =showstats(df([[sur,0],[emb,7],[cl,1]],data))[1]
-            print "For sur=",sur, "class=", cl, "city=", emb
-            print "Is city ind of class? "
-            print "[LT,LB,Lp] = ", [Nsec,Nsc,round(float(Nsec)/Nsc,3)]
-            print "[RT,RB,Rp] = ", [Nse,Ns,round(float(Nse)/Ns,3)]
-            print "Is class ind of city? "
-            print "[LT,LB,Lp] = ", [Nsec,Nse,round(float(Nsec)/Nse,3)]
-            print "[RT,RB,Rp] = ", [Nsc,Ns,round(float(Nsc)/Ns,3)]
-            print "#"*50
+            feat = [[cl,1],[sex,2]]
+            print "class=",cl, "and sex=",sex
+            print bayespred(feat)
+            print showstats(df(feat,data))
+
+    xvals = [ [1,2,3], 1], [ [0,1], 2 ], [ [5,15,50], 3], [ [0,1,3], 4 ], [ [0,1,3], 5], [ [0,1,2], 7 ]
+
+    for cl in [1,2,3]:
+        for sex in [0,1]:
+            for age in [5,15,50]:
+                for sib in [0,1,3]:
+                    for par in [0,1,3]:
+                        for emb in [0,1,2]:
+                            xval = [[cl,1], [sex,2], [age,3], [sib,4], [par,5], [emb,7]]
+                            bp = bayespred(xval)
+                            # there are 2*(3^5) = 486 different categories given the way we binned the data.
+                            # We want to display only the results that disagree with the F3SM12 model
+                            if (sex == 1) and (bp <= 0.5) and not( (cl == 3) and (emb == 0) ):
+                                print xval, "yields:", bp
+                            elif (sex == 1) and (bp >= 0.5) and (cl == 3) and (emb == 0) :
+                                print xval, "yields:", bp
+                            elif (sex == 0) and (bp <= 0.5) and (age == 5) and not(cl == 3) :
+                                print xval, "yields:", bp
+                            elif (sex == 0) and (bp >= 0.5) and not((age == 5) and not(cl == 3)) :
+                                print xval, "yields:", bp
+
+    print bayespred([[1,1],[0,2],[0,7],[3,4]])
 
 
 
 
 
-totaltime = time() - start
-print "This code took %f s to run" %totaltime
+
+
+
+
+
+
+
+
+
+    for sur in xrange(2):
+        for sex in xrange(2):
+            for cl in xrange(1,4):
+                Ns = showstats(df([[sur,0]],data))[1]
+                Nsc = showstats(df([[sur,0],[cl,1]],data))[1]
+                Nss = showstats(df([[sur,0],[sex,2]],data))[1]
+                Nscs = showstats(df([[sur,0],[cl,1],[sex,2]],data))[1]
+                print "For sur=",sur, "class=", cl, "sex=", sex
+                print "Is class ind of sex? "
+                print "[LT,LB,Lp] = ", [Nscs,Nss,round(float(Nscs)/Nss,3)]
+                print "[RT,RB,Rp] = ", [Nsc,Ns,round(float(Nsc)/Ns,3)]
+                print "Is sex ind of class? "
+                print "[LT,LB,Lp] = ", [Nscs,Nsc,round(float(Nscs)/Nsc,3)]
+                print "[RT,RB,Rp] = ", [Nss,Ns,round(float(Nss)/Ns,3)]
+                print "#"*50
+    print "#"*100
+    print "#"*100
+    for sur in xrange(2):
+        for sex in xrange(2):
+            for emb in xrange(3):
+                Ns = showstats(df([[sur,0]],data))[1]
+                Nse = showstats(df([[sur,0],[emb,7]],data))[1]
+                Nss = showstats(df([[sur,0],[sex,2]],data))[1]
+                Nses =showstats(df([[sur,0],[emb,7],[sex,2]],data))[1]
+                print "For sur=",sur, "city=", emb, "sex=", sex
+                print "Is city ind of sex? "
+                print "[LT,LB,Lp] = ", [Nses,Nss,round(float(Nses)/Nss,3)]
+                print "[RT,RB,Rp] = ", [Nse,Ns,round(float(Nse)/Ns,3)]
+                print "Is sex ind of city? "
+                print "[LT,LB,Lp] = ", [Nses,Nse,round(float(Nses)/Nse,3)]
+                print "[RT,RB,Rp] = ", [Nss,Ns,round(float(Nss)/Ns,3)]
+                print "#"*50
+    print "#"*100
+    print "#"*100
+    for sur in xrange(2):
+        for cl in xrange(1,4):
+            for emb in xrange(3):
+                Ns = showstats(df([[sur,0]],data))[1]
+                Nse = showstats(df([[sur,0],[emb,7]],data))[1]
+                Nsc = showstats(df([[sur,0],[cl,1]],data))[1]
+                Nsec =showstats(df([[sur,0],[emb,7],[cl,1]],data))[1]
+                print "For sur=",sur, "class=", cl, "city=", emb
+                print "Is city ind of class? "
+                print "[LT,LB,Lp] = ", [Nsec,Nsc,round(float(Nsec)/Nsc,3)]
+                print "[RT,RB,Rp] = ", [Nse,Ns,round(float(Nse)/Ns,3)]
+                print "Is class ind of city? "
+                print "[LT,LB,Lp] = ", [Nsec,Nse,round(float(Nsec)/Nse,3)]
+                print "[RT,RB,Rp] = ", [Nsc,Ns,round(float(Nsc)/Ns,3)]
+                print "#"*50
+
+
+
+
+
+    totaltime = time() - start
+    print "This code took %f s to run" %totaltime

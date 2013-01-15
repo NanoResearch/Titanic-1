@@ -16,6 +16,37 @@ set_printoptions(suppress = True) # makes for nice printing without scientific n
 ########################################################################################################################
 ########################################################################################################################
 
+# Summary of general regression algorithm
+# 1. Import Data
+# 2. Convert strings to floats
+# 3. Separate the data into "independent" or "predictor" variables X (m,n') and dependent variable Y (m,1)
+#   Notation: label 'm' (number of data samples) indices by 'i' or 'j' and 'n'(number of features) indices by 'a' or 'b'
+# 4. Plot or analyze the data to determine the best functional form of the hypothesis h
+# 5. If higher powers of any of the X[a] variables are needed then include extra columns into X to reflect this.
+#   X will now have shape (m,n) where n = n' + number of higher power terms included.
+# 6. Insert into the first column of X all 1's. (to accommodate the theta_0 term in the same notation)
+#   X is now (m,n+1)
+# 7. Feature scale the X[a], a=1..n as necessary, resulting in Xfs[a]
+# 8. Be sure the correct hypothesis function h is implemented into the gradient descent algorithm, for both functions
+#   Jcost() and gradientdescent(). h_theta (X) = f(theta.T*X) where f(z) = z for most continuous regression problems.
+#   For discrete classification use logistic function f(z) = g(z) = 1/(1+e^(-z))
+#   For some special cases non polynomial transformations may be required, for example f(z) = (1+z)/(1-z) etc.
+# 9. Run gradient descent :
+#   > graddes = gradientdescent(Xfs,Y,alpha,niter,lam)
+#   > thetapred = graddes[0]
+#   > Jsteps = graddes[1]
+# 10. Plot the Jcost function vs. the iteration number to confirm convergence
+# 11. Define algebraic symbols (via sympy) Xa to write the final prediction (hypothesis function)
+# 12. Note the features scaled variables Xfs that went in to gradient descent are related to our original features X by
+#   Xfs = (X-mean)/std, therefore our final hypothesis is :
+#   h(X) = f( thetapred.T * Xfs )
+
+
+
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
+
 def featurescale(Xmat):
     """
     Scales the x data (features) to be of somewhat uniform size. This greatly helps with convergence.
@@ -33,7 +64,10 @@ def featurescale(Xmat):
         X[:,col] = (X[:,col] - means[col-1])/stds[col-1]
     return [X, means, stds]
 
-def Jcost(X,y,theta,lam):
+def glog(z):
+    return 1 / (1 + np.exp(-z))
+
+def Jcost(X,y,theta,lam, logreg = False):
     """
     Cost function J for linear regression of one variable.
     X is (m,n+1) the feature matrix, where m = number of data examples and n = number of features
@@ -47,15 +81,18 @@ def Jcost(X,y,theta,lam):
     regcon = np.ones([(n+1),1])
     regcon[0] = 0 # (n+1,1) dim array [0,1,1,...,1].T
     m = np.size(y) # number of features
-    h = np.dot(X,theta) # hypothesis function is a (m,1) column vector
+    if logreg:
+        h = glog(np.dot(X,theta)) # hypothesis function is a (m,1) column vector
+    else:
+        h = np.dot(X,theta) # hypothesis function is a (m,1) column vector
     sqErrors = (h - y) ** 2 #squared element-wise, still (m,1) vector
     regterm = lam*sum( (theta*regcon)**2 ) #regularization term
     J = (1.0 / (2 * m)) * (sum(sqErrors) + regterm)# sum up the sqErrors for each term
     return J
 
-def gradientdescent(X,y,alpha,niter,lam):
+def gradientdescent(X,y,alpha,niter,lam, logreg = False):
     """
-    Performs gradient descent algorithm for linear regression.
+    Performs gradient descent algorithm for multivariate regression.
     X is (m,n+1) the feature matrix, where m = number of data examples and n = number of features
     y is the dependent variable we are trying to train on. y is a (m,1) column vector
     theta is a (n+1,1) column vector
@@ -74,10 +111,13 @@ def gradientdescent(X,y,alpha,niter,lam):
     regcon = np.ones([(n+1),1])
     regcon[0] = 0 # (n+1,1) dim array [0,1,1,...,1].T
     for i in xrange(niter):
-        h = np.dot(X,theta) #(m,1) column vector
+        if logreg:
+            h = glog(np.dot(X,theta)) # hypothesis function is a (m,1) column vector
+        else:
+            h = np.dot(X,theta) # hypothesis function is a (m,1) column vector
         err_x = np.dot((h - y).T, X) #(1,n+1) row vector
         theta = theta - (float(alpha) / m) * err_x.T - lam*(float(alpha) / m)*theta*regcon #(n+1,1) column vector
-        Jsteps[i, 0] = Jcost(X, y, theta, lam)
+        Jsteps[i, 0] = Jcost(X, y, theta, lam, logreg = logreg)
     #print theta.T
     return [theta.T, Jsteps.T]
 
@@ -148,7 +188,9 @@ def graddesexample(m,n,niter,alpha,lam,randomness,Jplot=0,datplot=0,extrahigh=0)
         show()
 
     X1,X2,X3,X4,X5,X6,X7,X8,X9,X10 = sympy.symbols('X1,X2,X3,X4,X5,X6,X7,X8,X9,X10')
-    XN = [1,X1,X2,X3,X4,X5,X6,X7,X8,X9,X10] #extend this manually if you want more than 10 features
+    XN = [1,X1,X2,X3,X4,X5,X6,X7,X8,X9,X10]
+    #Creates algebraic symbols to represent final prediction.
+    # extend this manually if you want more than 10 features
 
     Xa = np.array([XN[a] for a in xrange(n+1)])
     #print Xa
@@ -156,8 +198,6 @@ def graddesexample(m,n,niter,alpha,lam,randomness,Jplot=0,datplot=0,extrahigh=0)
         Xa[i] = (Xa[i]-means[i-1])/stds[i-1]
 
     hyp = np.dot(thetapred,Xa)
-
-
     #print "final hypothesis function h_theta(x)"
     return hyp
 
@@ -200,7 +240,8 @@ def graddesexpower(m,n,niter,alpha,lam,randomness,p=1):
     X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15,X16,X17,X18,X19,X20 \
     = sympy.symbols('X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15,X16,X17,X18,X19,X20')
     XN = [1,X1,X2,X3,X4,X5,X6,X7,X8,X9,X10,X11,X12,X13,X14,X15,X16,X17,X18,X19,X20]
-    #extend this manually if you want more than 20 features
+    #Creates algebraic symbols to represent final prediction.
+    # extend this manually if you want more than 10 features
 
     Xa = np.array([XN[a] for a in xrange(p*n+1)])
 
@@ -218,10 +259,13 @@ def graddesexpower(m,n,niter,alpha,lam,randomness,p=1):
 ########################################################################################################################
 ########################################################################################################################
 
-print graddesexample(1000,3,1000,0.1,0,10)
 
-print graddesexpower(1000,3,1000,0.1,0,10,p=2)
-print graddesexpower(1000,3,1000,0.1,1,10,p=2)
-print graddesexpower(1000,3,1000,0.1,10,10,p=2)
 
-print "Time elapsed:", time() - starttime
+
+#print graddesexample(1000,3,1000,0.1,0,10)
+
+#print graddesexpower(1000,3,1000,0.1,0,10,p=2)
+#print graddesexpower(1000,3,1000,0.1,1,10,p=2)
+#print graddesexpower(1000,3,1000,0.1,10,10,p=2)
+
+#print "Time elapsed:", time() - starttime

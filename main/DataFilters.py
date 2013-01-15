@@ -69,3 +69,36 @@ def showstats(datasubset): # use this on any subset of data. don't use this on t
         per=round(float(nsur)/ntot,3)
     return [nsur, ntot, per] # return the number survived, the total in the datasubset, and the percent survived
 
+
+def databin(dataset, agebin = "on"):
+    """
+    bins our data:
+    ages: 0-10 become 5, 11-19 become 15, 20+ become 50
+    sibsp and parch: 0 = 0, 1 and 2 = 1, and 3+ = 3 so have value 0,1, and 3 only
+    thus we have the following number of discrete values:
+    [0=sur, 1=class, 2=sex, 3=age, 4=sibsp, 5=parch, 6=fare, 7=embarked]
+    [2,3,2,3,3,3,fare,3]
+    fare will not be binned
+    """
+    dataset = dataset.copy()
+    for row in dataset:
+        if agebin == "on":
+            if (row[3] >=0) and (row[3]<=10):
+                row[3] = 5
+            elif (row[3] >=11) and (row[3]<=19):
+                row[3] = 15
+            else:
+                row[3] = 50
+        if (row[4] == 0):
+            row[4] = 0
+        elif (row[4] == 1) or (row[4] == 2):
+            row[4] = 1
+        else:
+            row[4] = 3
+        if (row[5] == 0):
+            row[5] = 0
+        elif (row[5] == 1) or (row[5] == 2):
+            row[5] = 1
+        else:
+            row[5] = 3
+    return dataset

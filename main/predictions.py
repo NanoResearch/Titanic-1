@@ -111,5 +111,5 @@ def randomforests(numforests, n_est, traindataset, testdataset):
 
 
 
-totaltime = time() - start
-print "This code took %f s to run" %totaltime
+#totaltime = time() - start
+#print "This code took %f s to run" %totaltime

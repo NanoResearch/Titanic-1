@@ -45,9 +45,18 @@ totdata = convertages(totdata,3)
 indict8 = { 0 : 'sur', 1 : 'class', 2 : 'sex', 3 : 'age', 4 : 'sibsp', 5 : 'parch', 6 : 'fare' , 7 : 'city' }
 
 constraints = []
+
+tempdata = data #using the training data set. unless...
+
+qdata = raw_input("Press 'return' to continue or type 'test' to use the test data instead of the train data: ")
+if qdata == "test":
+    tempdata = test8 # test8 can be used to look at passenger attributes. But note unknown survival value = 2.
+
 print "Recall indices [0=sur, 1=class, 2=sex, 3=age, 4=sibsp, 5=parch, 6=fare, 7=embarked]"
 while True:
-    query = raw_input("Input a feature constraint (in form 'min max index')(type 'x' to quit inputting constraints):")
+    query = raw_input("Input a feature constraint (in form 'min max index')(type 'x' to quit inputting constraints): ")
+    if query == "":
+        break
     if query == "x":
         break
     query = [float(x) for x in query.split()] # split breaks the 3 string inputs up, and they are then floated
@@ -59,14 +68,15 @@ while True:
 print "To summarize, you said constrain data by:", constraints
 
 ncon = np.size(constraints)/3
-tempdata = data #using the training data set.
-#tempdata = test8 # test8 can be used to look at passenger attributes. But note unknown survival value = 2.
+
 for x in xrange(ncon):
     fmin = constraints[x][0]
     fmax = constraints[x][1]
     index = constraints[x][2]
     tempdata = dfrange(fmin,fmax,index,tempdata)
 
+fareavg = round(np.mean(tempdata[::,6]),1)
+
 print tempdata
 print showstats(tempdata)
-
+print "The average fare in this group is:",  fareavg

@@ -239,7 +239,7 @@ def showsurvivaltablesanalysis():
     print scoreRFC7
 
 
-showsurvivaltablesanalysis()
+#showsurvivaltablesanalysis()
 
 totaltime = time() - starttime
 print "This code took %f s to run" %totaltime

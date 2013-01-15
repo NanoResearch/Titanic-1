@@ -26,22 +26,20 @@ for x in xrange(418):
 
 
 
-newcsv = csv.writer(open('../bayespred2.csv','wb'))
-newpredict = bptraindep # = bayespreddata(db, depend = True, indexignore = [], imposedepend = True)
+newcsv = csv.writer(open('../bayespredind.csv','wb'))
+newpredict = bptestind # bptestind = bayespreddata(test8db)
 for x in xrange(418):
     if newpredict[x]==0:
         newcsv.writerow(["0"]) # writerow takes a list and writes it to a row.
     if newpredict[x]==1:
         newcsv.writerow(["1"]) # We only need the predictions, not the other passenger data.
 
-
-
-
-newcsv = csv.writer(open('../bayespred2.csv','wb'))
-newpredict = bptraindep # = bayespreddata(db, depend = True, indexignore = [], imposedepend = True)
+newcsv = csv.writer(open('../bayespreddep.csv','wb'))
+newpredict = bptestdep # bptestdep = bayespreddata(test8db, depend = True, indexignore = [], imposedepend = True)
 for x in xrange(418):
     if newpredict[x]==0:
         newcsv.writerow(["0"]) # writerow takes a list and writes it to a row.
     if newpredict[x]==1:
         newcsv.writerow(["1"]) # We only need the predictions, not the other passenger data.
+
 
