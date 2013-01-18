@@ -227,6 +227,8 @@ print x
 print type(x)
 
 #PLOTTING
+# http://www.ast.uct.ac.za/~sarblyth/pythonGuide/PythonPlottingBeginnersGuide.pdf
+
 t = np.arange(0.0, 1.0+0.01, 0.01)
 s = np.cos(2*2*np.pi*t)
 pylab.plot(t, s)

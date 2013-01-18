@@ -17,6 +17,7 @@ set_printoptions(suppress = True) # makes for nice printing without scientific n
 ########################################################################################################################
 
 # Summary of general regression algorithm
+
 # 1. Import Data
 # 2. Convert strings to floats
 # 3. Separate the data into "independent" or "predictor" variables X (m,n') and dependent variable Y (m,1)
@@ -41,16 +42,17 @@ set_printoptions(suppress = True) # makes for nice printing without scientific n
 #   Xfs = (X-mean)/std, therefore our final hypothesis is :
 #   h(X) = f( thetapred.T * Xfs )
 
+########################################################################################################################
+########################################################################################################################
+########################################################################################################################
 
-
-########################################################################################################################
-########################################################################################################################
-########################################################################################################################
+def normeqn(X,y):
+    return np.dot( np.linalg.inv( np.dot(X.T,X) ), np.dot(X.T, y) ).T
 
 def featurescale(Xmat):
     """
     Scales the x data (features) to be of somewhat uniform size. This greatly helps with convergence.
-    X=(m,n+1) matrix, with m rows (each representing a training data case).
+    Xmat=(m,n+1) array, with m rows (each representing a training data case).
     The n column vectors, where n=number of features, will be rescaled.
     Note the first column is all 1's and should not be scaled.
     """
@@ -65,6 +67,9 @@ def featurescale(Xmat):
     return [X, means, stds]
 
 def glog(z):
+    """
+    The logistic, or sigmoid function.
+    """
     return 1 / (1 + np.exp(-z))
 
 def Jcost(X,y,theta,lam, logreg = False):
@@ -80,14 +85,17 @@ def Jcost(X,y,theta,lam, logreg = False):
     n = np.shape(X)[1]-1 #number of features
     regcon = np.ones([(n+1),1])
     regcon[0] = 0 # (n+1,1) dim array [0,1,1,...,1].T
-    m = np.size(y) # number of features
+    m = np.size(y) # number of training examples
     if logreg:
         h = glog(np.dot(X,theta)) # hypothesis function is a (m,1) column vector
+        costi = y*np.log(h) + (1-y)*np.log(1-h)
+        J = -(1.0 / float(m)) * sum(costi)
     else:
         h = np.dot(X,theta) # hypothesis function is a (m,1) column vector
-    sqErrors = (h - y) ** 2 #squared element-wise, still (m,1) vector
-    regterm = lam*sum( (theta*regcon)**2 ) #regularization term
-    J = (1.0 / (2 * m)) * (sum(sqErrors) + regterm)# sum up the sqErrors for each term
+        costi = 0.5 * (h - y) ** 2 #squared element-wise, still (m,1) vector.
+            # These are the squared errors for each of the m training data (i=0..m-1)
+        regterm = 0.5*lam*sum( (theta*regcon)**2 ) #regularization term
+        J = (1.0 / float(m)) * (sum(costi) + regterm) # sum up the squared errors and regularization terms
     return J
 
 def gradientdescent(X,y,alpha,niter,lam, logreg = False):
@@ -99,6 +107,7 @@ def gradientdescent(X,y,alpha,niter,lam, logreg = False):
     alpha is the learning rate.
     niter is the number of iterations.
     lam = lambda the regularization parameter
+    logreg = True will perform gradient descent with a logistic cost function
     """
     X = X.copy()
     y = y.copy()
@@ -107,7 +116,7 @@ def gradientdescent(X,y,alpha,niter,lam, logreg = False):
     theta = np.zeros((n+1,1))
     if (n+1)*m != np.size(X):
         print "ERROR"
-    Jsteps = np.zeros((niter,1))
+    Jsteps = np.zeros(niter)
     regcon = np.ones([(n+1),1])
     regcon[0] = 0 # (n+1,1) dim array [0,1,1,...,1].T
     for i in xrange(niter):
@@ -115,12 +124,12 @@ def gradientdescent(X,y,alpha,niter,lam, logreg = False):
             h = glog(np.dot(X,theta)) # hypothesis function is a (m,1) column vector
         else:
             h = np.dot(X,theta) # hypothesis function is a (m,1) column vector
-        err_x = np.dot((h - y).T, X) #(1,n+1) row vector
-        theta = theta - (float(alpha) / m) * err_x.T - lam*(float(alpha) / m)*theta*regcon #(n+1,1) column vector
-        Jsteps[i, 0] = Jcost(X, y, theta, lam, logreg = logreg)
-    #print theta.T
-    return [theta.T, Jsteps.T]
-
+        delJdeltheta = (1.0 / float(m)) * np.dot( X.T , h - y ) #(n+1,1) column vector.
+            # These are the partial derivatives of J wrt thetas. Note that this take the same form (with different h)
+            # for multivariate linear regression and for logistic regression.
+        theta = theta - float(alpha) * delJdeltheta  - lam*(float(alpha) / m)*theta*regcon #(n+1,1) column vector
+        Jsteps[i] = Jcost(X, y, theta, lam, logreg = logreg)
+    return [theta.T, Jsteps]
 
 def graddesexample(m,n,niter,alpha,lam,randomness,Jplot=0,datplot=0,extrahigh=0):
     """
@@ -201,7 +210,6 @@ def graddesexample(m,n,niter,alpha,lam,randomness,Jplot=0,datplot=0,extrahigh=0)
     #print "final hypothesis function h_theta(x)"
     return hyp
 
-
 def graddesexpower(m,n,niter,alpha,lam,randomness,p=1):
     """
     Creates an example of use of gradient descent with multiple variables.
@@ -253,6 +261,7 @@ def graddesexpower(m,n,niter,alpha,lam,randomness,p=1):
     return hyp
 
 
+#Logistic Regression example
 
 
 ########################################################################################################################

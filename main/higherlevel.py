@@ -225,11 +225,12 @@ def showsurvivaltablesanalysis():
     # However, all of the prediction models do worse on the test data than the train data.
     # This didn't have to be the case, particularly for the simpler models (GM and F3SM12)
 
-    scoreGM = [0.76555, predicttrain(genderpred(data))] #320/418 right
-    scoreF3SM12 = [0.78947, predicttrain(f3sm12pred(data))] #330/418
-    scorenew = [0.78469, predicttrain(newpred(data))] #328/418
-    scoreRFC5 = [0.77033, predicttrain(RFC5train)] #322/418
-    scoreRFC7 = [0.77512, predicttrain(RFC7train)] #324/418
+    scoreGM = [0.76555, predicttrain(genderpred(data))] #160/209 right
+    scoreF3SM12 = [0.78947, predicttrain(f3sm12pred(data))] #165/209
+    scorenew = [0.78469, predicttrain(newpred(data))] #164/209
+    scoreRFC5 = [0.77033, predicttrain(RFC5train)] #161/209
+    scoreRFC7 = [0.77512, predicttrain(RFC7train)] #162/209
+    # Note that only half of the test data (209) is used on the leaderboard.
 
     print "Scores for predictions on [test, train] data sets for GM, F3SM12, newpred, RFC5, RFC7"
     print scoreGM
