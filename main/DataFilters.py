@@ -16,6 +16,11 @@ def df(features,dataset):
     Filters the data by certain features.
     Features is a list of features we want to filter by.
     For ex. [[1,5],[2,6]] # gives all data with sibsp = 1 and parch = 2.
+    For data and test8 note indices [0=sur, 1=class, 2=sex, 3=age, 4=sibsp, 5=parch, 6=fare, 7=embarked]
+    For testdata note indices [0=class, 1=sex, 2=age, 3=sibsp, 4=parch, 5=fare, 6=embarked]
+    It is probably better to only use test8, and not testdata, so as to avoid confusion on the indices:
+    Using only data and test8 you will have uniform index categories.
+
     """
     if size(dataset) == 0:
         return []
@@ -30,10 +35,6 @@ def df(features,dataset):
         if size(dataset) == 0:
             return []
     return dataset
-# for data and test8 note indices [0=sur, 1=class, 2=sex, 3=age, 4=sibsp, 5=parch, 6=fare, 7=embarked]
-# for testdata note indices [0=class, 1=sex, 2=age, 3=sibsp, 4=parch, 5=fare, 6=embarked]
-# it is probably better to only use test8, and not testdata, so as to avoid confusion on the indices:
-# using only data and test8 you will have uniform index categories.
 
 # dfrange will enable us to filter by age range or fare range, as well as ranges in the discrete features
 def dfrange(fmin,fmax,index,dataset):

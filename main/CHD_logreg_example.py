@@ -33,7 +33,7 @@ np.set_printoptions(linewidth=132)
 #   > Jsteps = graddes[1]
 # 10. Plot the Jcost function vs. the iteration number to confirm convergence
 # 11. Define algebraic symbols (via sympy) Xa to write the final prediction (hypothesis function)
-# 12. Note the features scaled variables Xfs that went in to gradient descent are related to our original features X by
+# 12. Note the feature scaled variables Xfs that went in to gradient descent are related to our original features X by
 #   Xfs = (X-mean)/std, therefore our final hypothesis is :
 #   h(X) = f( thetapred.T * Xfs )
 

@@ -1,6 +1,5 @@
-
-
 __author__ = 'michaelbinger'
+
 from time import time, clock
 starttime = time()
 
@@ -8,9 +7,12 @@ import numpy as np
 from pylab import *
 import random
 import sympy
+import scikits.statsmodels.api as sm
 import sys
 #from random import random, randrange
 set_printoptions(suppress = True) # makes for nice printing without scientific notation
+
+start = time()
 
 ########################################################################################################################
 ########################################################################################################################
@@ -47,6 +49,11 @@ set_printoptions(suppress = True) # makes for nice printing without scientific n
 ########################################################################################################################
 
 def normeqn(X,y):
+    """
+    returns the predicted values of parameters theta.
+    X has shape (m,n+1)
+    y has shape (m,1)
+    """
     return np.dot( np.linalg.inv( np.dot(X.T,X) ), np.dot(X.T, y) ).T
 
 def featurescale(Xmat):
@@ -86,6 +93,7 @@ def Jcost(X,y,theta,lam, logreg = False):
     regcon = np.ones([(n+1),1])
     regcon[0] = 0 # (n+1,1) dim array [0,1,1,...,1].T
     m = np.size(y) # number of training examples
+    y = y.reshape(m,1) # ensures proper shape of y (i.e. that it is not accidentally shape (m,))
     if logreg:
         h = glog(np.dot(X,theta)) # hypothesis function is a (m,1) column vector
         costi = y*np.log(h) + (1-y)*np.log(1-h)
@@ -112,6 +120,7 @@ def gradientdescent(X,y,alpha,niter,lam, logreg = False):
     X = X.copy()
     y = y.copy()
     m = np.size(y) # number of training data examples
+    y = y.reshape(m,1) # ensures proper shape of y (i.e. that it is not accidentally shape (m,))
     n = np.shape(X)[1]-1 #number of features
     theta = np.zeros((n+1,1))
     if (n+1)*m != np.size(X):
@@ -141,7 +150,7 @@ def graddesexample(m,n,niter,alpha,lam,randomness,Jplot=0,datplot=0,extrahigh=0)
     randomness = governs the degree of randomness in the fake data set that is generated
     lam = lambda the regularization parameter
     Jplot = 1 means display the Jplot. No otherwise
-    datplot = 1 mean display the data plot. No otherwise.
+    datplot = 1 means display the data plot. No otherwise.
     extrahigh = if set to 1 then replace the last feature column with x[1]^4 and leave y linear
     """
 
@@ -188,6 +197,19 @@ def graddesexample(m,n,niter,alpha,lam,randomness,Jplot=0,datplot=0,extrahigh=0)
     Jsteps = graddes[1]
     #print "prediction for theta:", thetapred
     #print Jsteps
+
+    print "OLS package reults:"
+    olstest = sm.OLS(y,x).fit()
+    #olstest.summary()
+    #print olstest
+    print olstest.params
+    print olstest.bse
+    print olstest.summary()
+
+    print "My normal eqn results:"
+    print normeqn(x,y)
+
+    print "My multivariate regression with gradient descent results "
 
     if Jplot == 1:
         scatter(np.arange(niter)+1,Jsteps)
@@ -260,21 +282,37 @@ def graddesexpower(m,n,niter,alpha,lam,randomness,p=1):
 
     return hyp
 
-
-#Logistic Regression example
-
-
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
+if __name__ == "__main__":
 
+    m = 100000
+    n = 10
+    randomness = 1
 
+    x = np.ones((m,n+1))
+    for a in xrange(1,n+1):
+        x[::,a] = np.array([random.randint(1,100) for i in xrange(m)])
 
+    #print "This is X:"
+    #print x
 
-#print graddesexample(1000,3,1000,0.1,0,10)
+    y = np.zeros((m,1))
+    for i in xrange(m):
+        r = random.random()
+        y[i] = sum(x[i,0:n+1]) + randomness*n*(r - 0.5)
+            # Note the true distribution of y is y=1+x_1+x_2+...+x_n for n features. Randomness is added.
 
-#print graddesexpower(1000,3,1000,0.1,0,10,p=2)
-#print graddesexpower(1000,3,1000,0.1,1,10,p=2)
-#print graddesexpower(1000,3,1000,0.1,10,10,p=2)
+    ne = normeqn(x,y)
+    print ne[0:100]
 
-#print "Time elapsed:", time() - starttime
+    #print graddesexample(1000,3,1000,0.1,0,10)
+    # compares my regression with grad des, the normal eqn solution, and the OLS package from scikits
+
+    #print graddesexpower(1000,3,1000,0.1,0,10,p=2)
+    #print graddesexpower(1000,3,1000,0.1,1,10,p=2)
+    #print graddesexpower(1000,3,1000,0.1,10,10,p=2)
+
+    print "Time elapsed:", time() - starttime
+

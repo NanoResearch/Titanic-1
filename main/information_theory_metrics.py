@@ -23,7 +23,7 @@ np.set_printoptions(linewidth=132)
 
 
 ############# DATA ################################
-data=titandata("train") #(891,8) array
+data = titandata("train") #(891,8) array
 test8 = titandata("test8") #(418,8) array
 # [0=sur, 1=class, 2=sex, 3=age, 4=sibsp, 5=parch, 6=fare, 7=embarked]
 # The survival values are 0=die, 1=live, 2=don't know (for test8)
@@ -74,7 +74,7 @@ def jointentropy(index1, index2, dataset = data):
     """
     This returns the joint entropy of two variables, which are indicated by index1 and index2 in dataset.
     The joint entropy of two random variables is always greater than the maximum of individual entropies,
-    and less than the sum of two independent entropies.
+    and less than the sum of the two individual entropies.
     """
     dataset = dataset.copy()
     possvals1 = set( dataset[0::, index1] ) # possible values of index1
@@ -90,7 +90,7 @@ def jointentropy(index1, index2, dataset = data):
 
 def condentropy(yindex, xindex, dataset = data):
     """
-    Returns the conditional entropy H(Y|X) where.
+    Returns the conditional entropy H(Y|X).
     """
     dataset = dataset.copy()
     possvalsY = set( dataset[0::, yindex] ) # possible values of index1
