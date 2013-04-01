@@ -19,7 +19,8 @@ def read_csv_into_array (csv_file):
 #output a .csv file from either a list or an array
 def convert_into_csv (array_to_file, output_name):
     array_writer = csv.writer(open("../main/"+output_name+".csv", "wb"))
-    for row in array_to_file:
+    list_with_rows = array_to_file.tolist()#will throw an error if "array_to_file" is already a list
+    for row in list_with_rows:
         array_writer.writerow(row)
     return
 
