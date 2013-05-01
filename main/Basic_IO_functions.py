@@ -3,6 +3,8 @@ __author__ = 'Andrew'
 import csv as csv
 import numpy as np
 import scipy
+import matplotlib.pyplot as plt
+import matplotlib.mlab as mlab
 from numpy import *
 
 
@@ -22,6 +24,17 @@ def convert_into_csv (array_to_file, output_name):
     #list_with_rows = array_to_file.tolist()#will throw an error if "array_to_file" is already a list
     for row in array_to_file:
         array_writer.writerow(row)
+    return
+
+def plot_histogram_of_comparison(array_to_plot):
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    # the histogram of the data
+    ax.hist(array_to_plot, facecolor='green')
+
+    plt.show()
     return
 
 #train_array = read_csv_into_array("train.csv")
